@@ -1,0 +1,481 @@
+<html><head><base href="https://websim.creation.engine/obscure-word-generator/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wordEngine</title>
+<style>
+  :root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --title-color: #333333;
+    --word-color: #000000;
+    --definition-color: #1a1a1a;
+    --button-bg: #cccccc;
+    --button-hover: #b3b3b3;
+    --loading-color: #000000;
+    --shockwave-color: rgba(0, 0, 0, 0.1);
+  }
+
+  body.dark-mode {
+    --bg-color: #000000;
+    --text-color: #ffffff;
+    --title-color: #cccccc;
+    --word-color: #ffffff;
+    --definition-color: #e0e0e0;
+    --button-bg: #333333;
+    --button-hover: #4d4d4d;
+    --loading-color: #ffffff;
+    --shockwave-color: rgba(255, 255, 255, 0.1);
+  }
+
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    line-height: 1.6;
+    padding: 0 5%;
+    overflow: hidden;
+  }
+
+  .left-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 40%;
+    z-index: 1;
+  }
+
+  .right-side {
+    width: 50%;
+    text-align: right;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    color: var(--title-color);
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+  }
+
+  #word {
+    font-size: 3rem;
+    color: var(--word-color);
+    margin-bottom: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    position: relative;
+    display: inline-block;
+  }
+
+  #definition {
+    font-size: 1.25rem;
+    color: var(--definition-color);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  #reload {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 1rem;
+  }
+
+  #reload:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-2px);
+  }
+
+  #reload:active {
+    transform: translateY(0);
+  }
+
+  .loading {
+    font-size: 1.5rem;
+    color: var(--loading-color);
+  }
+
+  #theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--button-bg);
+    color: var(--text-color);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+  }
+
+  #theme-toggle:hover {
+    transform: scale(1.1);
+  }
+
+  @keyframes shockwave {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(2);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  .shockwave {
+    position: fixed;
+    width: 100vw;
+    height: 100vw;
+    border-radius: 50%;
+    background-color: var(--shockwave-color);
+    animation: shockwave 0.6s ease-out;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+      padding: 2rem;
+    }
+
+    .left-side, .right-side {
+      width: 100%;
+      text-align: center;
+    }
+
+    .left-side {
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    #word {
+      font-size: 2.5rem;
+    }
+
+    #definition {
+      font-size: 1.1rem;
+    }
+  }
+</style>
+</head>
+<body>
+  <button id="theme-toggle">🌙</button>
+  <div class="left-side">
+    <h1>wordEngine</h1>
+    <button id="reload">Discover Another</button>
+  </div>
+  <div class="right-side">
+    <div id="word"></div>
+    <div id="definition"></div>
+  </div>
+
+  <script>
+    const wordElement = document.getElementById('word');
+    const definitionElement = document.getElementById('definition');
+    const reloadButton = document.getElementById('reload');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // Expanded list of obscure words
+    const obscureWords = [
+      { word: "abibliophobia", definition: "The fear of running out of reading material." },
+      { word: "absquatulate", definition: "To leave abruptly or flee." },
+      { word: "acatalepsy", definition: "The impossibility of comprehending the universe; the belief that human knowledge can never have certainty." },
+      { word: "adoxography", definition: "Skilled writing on an unimportant subject." },
+      { word: "alexithymia", definition: "The inability to express emotions or understand others' emotions." },
+      { word: "anastrophe", definition: "The inversion of the usual order of words or clauses." },
+      { word: "apricity", definition: "The warmth of the sun in winter." },
+      { word: "ataraxia", definition: "A state of freedom from emotional disturbance and anxiety." },
+      { word: "basorexia", definition: "An overwhelming desire to kiss." },
+      { word: "biblichor", definition: "The distinctive smell of old books." },
+      { word: "borborygmus", definition: "The rumbling sound of gas moving through the intestines." },
+      { word: "cacophemism", definition: "The use of an unpleasant-sounding word instead of a pleasant one." },
+      { word: "chiaroscurist", definition: "An artist who uses strong contrasts between light and dark." },
+      { word: "cockalorum", definition: "A boastful and self-important person; a strutting little fellow." },
+      { word: "crepuscular", definition: "Relating to or resembling twilight; appearing or active at twilight." },
+      { word: "defenestration", definition: "The act of throwing someone or something out of a window." },
+      { word: "dysania", definition: "The state of finding it hard to get out of bed in the morning." },
+      { word: "eccedentesiast", definition: "Someone who hides pain behind a smile." },
+      { word: "enantiodromia", definition: "The tendency of things to change into their opposites, especially as a supposed governing principle of natural cycles and of psychological development." },
+      { word: "epeolatry", definition: "The worship of words." },
+      { word: "epistemophilia", definition: "An excessive love of knowledge." },
+      { word: "eudaemonia", definition: "A state of happiness and well-being." },
+      { word: "floccinaucinihilipilification", definition: "The act of estimating something as worthless." },
+      { word: "flummox", definition: "To perplex or confuse utterly." },
+      { word: "gambrinous", definition: "Being full of beer." },
+      { word: "grok", definition: "To understand profoundly and intuitively." },
+      { word: "hamartia", definition: "A fatal flaw leading to the downfall of a tragic hero." },
+      { word: "hiraeth", definition: "A homesickness for a home you can't return to, or that never was." },
+      { word: "imbroglio", definition: "An extremely confused, complicated, or embarrassing situation." },
+      { word: "jentacular", definition: "Pertaining to breakfast." },
+      { word: "kakistocracy", definition: "Government by the worst persons; a form of government in which the worst persons are in power." },
+      { word: "kerfuffle", definition: "A commotion or fuss, especially one caused by conflicting views." },
+      { word: "lacuna", definition: "An unfilled space or interval; a gap." },
+      { word: "lethologica", definition: "The inability to remember a word or put your finger on the right word." },
+      { word: "limerence", definition: "The state of being infatuated with another person." },
+      { word: "logorrhea", definition: "Excessive and often incoherent talkativeness or wordiness." },
+      { word: "lychnobite", definition: "One who works at night and sleeps during the day." },
+      { word: "meraki", definition: "Doing something with soul, creativity, or love." },
+      { word: "monachopsis", definition: "The subtle but persistent feeling of being out of place." },
+      { word: "nefelibata", definition: "A cloud walker; one who lives in the clouds of their own imagination." },
+      { word: "numinous", definition: "Having a strong religious or spiritual quality; indicating or suggesting the presence of a divinity." },
+      { word: "obambulate", definition: "To walk about." },
+      { word: "omphaloskepsis", definition: "Contemplation of one's navel as an aid to meditation." },
+      { word: "oneiric", definition: "Relating to dreams or dreaming." },
+      { word: "paraprosdokian", definition: "A figure of speech in which the latter part of a sentence, phrase, or larger discourse is unexpected in a way that causes the reader or listener to reframe or reinterpret the first part." },
+      { word: "petrichor", definition: "The pleasant smell that frequently accompanies the first rain after a long period of warm, dry weather." },
+      { word: "pluviophile", definition: "A lover of rain; someone who finds joy and peace of mind during rainy days." },
+      { word: "quixotic", definition: "Exceedingly idealistic; unrealistic and impractical." },
+      { word: "raconteur", definition: "A person who is skilled in relating stories and anecdotes interestingly." },
+      { word: "rhadamanthine", definition: "Rigorously strict or just." },
+      { word: "saudade", definition: "A deep emotional state of nostalgic or profound melancholic longing for an absent something or someone." },
+      { word: "schadenfreude", definition: "Pleasure derived from someone else's misfortune." },
+      { word: "serendipity", definition: "The occurrence and development of events by chance in a happy or beneficial way." },
+      { word: "sesquipedalian", definition: "Characterized by long words; long-winded." },
+      { word: "sonder", definition: "The realization that each random passerby is living a life as vivid and complex as your own." },
+      { word: "sophrosyne", definition: "A healthy state of mind, characterized by self-control, moderation, and a deep awareness of one's true self." },
+      { word: "susurrus", definition: "A soft murmuring or rustling sound; a whisper." },
+      { word: "syzygy", definition: "The alignment of three celestial bodies." },
+      { word: "tergiversate", definition: "To change repeatedly one's attitude or opinions with respect to a cause, subject, etc.; to equivocate." },
+      { word: "thalassophile", definition: "A lover of the sea; someone who loves the sea, ocean." },
+      { word: "vellichor", definition: "The strange wistfulness of used bookstores." },
+      { word: "vorfreude", definition: "The joyful, intense anticipation that comes from imagining future pleasures." },
+      { word: "weltschmerz", definition: "A feeling of melancholy and world-weariness." },
+      { word: "xenial", definition: "Of, relating to, or constituting hospitality or relations between host and guest." },
+      { word: "yaldson", definition: "One who is the son of a nag." },
+      { word: "zemblanity", definition: "The inevitable discovery of what we would rather not know; the opposite of serendipity." },
+      { word: "ablutomania", definition: "An obsessive desire to wash oneself constantly." },
+      { word: "agastopia", definition: "Admiration of a particular part of someone's body." },
+      { word: "anecdata", definition: "Information presented as fact that is based on personal experience or observation rather than systematic research." },
+      { word: "apanthropy", definition: "A love of solitude; dislike of social interaction." },
+      { word: "augean", definition: "Extremely difficult and distasteful, often in reference to cleaning or reforming something." },
+      { word: "baffle", definition: "To confuse or perplex completely; to thwart or frustrate." },
+      { word: "bloviate", definition: "To speak pompously or boastfully; to make long-winded speeches." },
+      { word: "cacoethes", definition: "An irresistible urge to do something inadvisable." },
+      { word: "callipygian", definition: "Having beautifully shaped buttocks." },
+      { word: "chremamorphism", definition: "The tendency to attribute human characteristics to inanimate objects." },
+      { word: "clinomania", definition: "An excessive desire to stay in bed." },
+      { word: "cryptomnesia", definition: "The appearance in consciousness of memory images which are not recognized as such but which appear as original creations." },
+      { word: "decathect", definition: "To withdraw one's feelings of attachment from a person, idea, or object." },
+      { word: "dégringolade", definition: "A rapid decline or deterioration." },
+      { word: "desiderata", definition: "Things wanted or needed; the plural of desideratum." },
+      { word: "eldritch", definition: "Strange or unnatural, especially in a disturbing way; eerie." },
+      { word: "emolument", definition: "A salary, fee, or profit from employment or office." },
+      { word: "epiphany", definition: "A sudden, intuitive perception of or insight into the reality or essential meaning of something." },
+      { word: "ergophobia", definition: "An abnormal fear of work; an aversion to work." },
+      { word: "ethereal", definition: "Extremely delicate and light in a way that seems too perfect for this world." },
+      { word: "eucatastrophe", definition: "A sudden and favorable resolution of events in a story; a happy ending." },
+      { word: "evanesce", definition: "To disappear gradually; to vanish; to fade away." },
+      { word: "fata morgana", definition: "A complex form of superior mirage visible in a narrow band right above the horizon." },
+      { word: "floccinaucinihilipilification", definition: "The action or habit of estimating something as worthless." },
+      { word: "funambulist", definition: "A tightrope walker." },
+      { word: "galimatias", definition: "Confused or unintelligible talk." },
+      { word: "gastropub", definition: "A pub that specializes in serving high-quality food." },
+      { word: "grawlix", definition: "A string of typographic symbols used to represent profanity." },
+      { word: "haecceity", definition: "The property of being a unique and individual thing." },
+      { word: "hypnopompic", definition: "Relating to the state immediately preceding waking up." },
+      { word: "iatrogenic", definition: "Relating to illness caused by medical examination or treatment." },
+      { word: "idiopathy", definition: "A disease or condition which arises spontaneously or for which the cause is unknown." },
+      { word: "ineffable", definition: "Too great or extreme to be expressed or described in words." },
+      { word: "jactitation", definition: "Restlessness or tossing of the body during illness." },
+      { word: "kakorrhaphiophobia", definition: "The fear of failure or defeat." },
+      { word: "katzenjammer", definition: "A hangover or a state of depression or confusion." },
+      { word: "kerfuffle", definition: "A commotion or fuss, especially one caused by conflicting views." },
+      { word: "lalochezia", definition: "The use of foul or abusive language to relieve stress or ease pain." },
+      { word: "limerence", definition: "The state of being infatuated or obsessed with another person." },
+      { word: "logomachy", definition: "An argument about words." },
+      { word: "loquacious", definition: "Tending to talk a great deal; talkative." },
+      { word: "lucubrate", definition: "To work, write, or study laboriously, especially at night." },
+      { word: "mellifluous", definition: "Sweet or musical; pleasant to hear." },
+      { word: "mendacious", definition: "Not telling the truth; lying." },
+      { word: "metanoia", definition: "A profound, usually spiritual, transformation; conversion." },
+      { word: "miasma", definition: "A highly unpleasant or unhealthy smell or vapor." },
+      { word: "minatory", definition: "Having a menacing quality." },
+      { word: "nadir", definition: "The lowest point in the fortunes of a person or organization." },
+      { word: "nefarious", definition: "Wicked or criminal." },
+      { word: "nemesis", definition: "A long-standing rival; an archenemy." },
+      { word: "nidificate", definition: "To build a nest." },
+      { word: "noosphere", definition: "The sphere of human consciousness and mental activity." },
+      { word: "nugatory", definition: "Of no value or importance." },
+      { word: "obstreperous", definition: "Noisy and difficult to control." },
+      { word: "oenomel", definition: "A mixture of wine and honey." },
+      { word: "officious", definition: "Assertive of authority in an annoyingly domineering way." },
+      { word: "onus", definition: "A difficult or disagreeable task or burden." },
+      { word: "opsimath", definition: "A person who begins to learn or study late in life." },
+      { word: "osculate", definition: "To kiss." },
+      { word: "palimpsest", definition: "A manuscript or piece of writing material on which the original writing has been effaced to make room for later writing but of which traces remain." },
+      { word: "panacea", definition: "A solution or remedy for all difficulties or diseases." },
+      { word: "panglossian", definition: "Excessively optimistic." },
+      { word: "parvenu", definition: "A person of obscure origin who has gained wealth, influence, or celebrity." },
+      { word: "pasquinade", definition: "A satire or lampoon, especially one posted in a public place." },
+      { word: "penumbra", definition: "The partially shaded outer region of the shadow cast by an opaque object." },
+      { word: "peregrinate", definition: "To travel or wander around from place to place." },
+      { word: "perfidious", definition: "Deceitful and untrustworthy." },
+      { word: "persiflage", definition: "Light, bantering talk or writing." },
+      { word: "perspicacious", definition: "Having a ready insight into and understanding of things." },
+      { word: "phantasmagoria", definition: "A sequence of real or imaginary images like those seen in a dream." },
+      { word: "philomath", definition: "A lover of learning; a scholar." },
+      { word: "plenipotentiary", definition: "A person, especially a diplomat, invested with the full power of independent action on behalf of their government." },
+      { word: "plethora", definition: "A large or excessive amount of something." },
+      { word: "portmanteau", definition: "A word blending the sounds and combining the meanings of two others." },
+      { word: "posthaste", definition: "As quickly as possible; with all speed." },
+      { word: "preantepenultimate", definition: "Fourth from last." },
+      { word: "presentiment", definition: "An intuitive feeling about the future, especially one of foreboding." },
+      { word: "propinquity", definition: "The state of being close to someone or something; proximity." },
+      { word: "protean", definition: "Tending or able to change frequently or easily." },
+      { word: "pulchritudinous", definition: "Physically beautiful; comely." },
+      { word: "qualia", definition: "The internal and subjective component of sense perceptions, arising from stimulation of the senses by phenomena." },
+      { word: "quiescent", definition: "In a state or period of inactivity or dormancy." },
+      { word: "quintessence", definition: "The most perfect or typical example of a quality or class." },
+      { word: "quotidian", definition: "Of or occurring every day; daily." },
+      { word: "raconteur", definition: "A person who tells anecdotes in a skillful and amusing way." },
+      { word: "rambunctious", definition: "Uncontrollably exuberant; boisterous." },
+      { word: "ratiocination", definition: "The process of logical reasoning." },
+      { word: "recalcitrant", definition: "Having an obstinately uncooperative attitude toward authority or discipline." },
+      { word: "recondite", definition: "Little known; abstruse." },
+      { word: "redolent", definition: "Strongly reminiscent or suggestive of." },
+      { word: "riparian", definition: "Relating to or situated on the banks of a river." },
+      { word: "rococo", definition: "Characterized by an elaborately ornamental late baroque style of decoration." },
+      { word: "rubicon", definition: "A point of no return." },
+      { word: "sagacious", definition: "Having or showing keen mental discernment and good judgment; wise or shrewd." },
+      { word: "salubrious", definition: "Health-giving; healthy." },
+      { word: "sartorial", definition: "Relating to tailoring, clothes, or style of dress." },
+      { word: "schadenfreude", definition: "Pleasure derived by someone from another person's misfortune." },
+      { word: "scintilla", definition: "A tiny trace or spark of a specified quality or feeling." },
+      { word: "serendipity", definition: "The occurrence and development of events by chance in a happy or beneficial way." },
+      { word: "simpatico", definition: "Likeable and easy to get along with." },
+      { word: "solecism", definition: "A grammatical mistake in speech or writing." },
+      { word: "soliloquy", definition: "An act of speaking one's thoughts aloud when by oneself or regardless of any hearers." },
+      { word: "somnolent", definition: "Sleepy; drowsy." },
+      { word: "soporific", definition: "Tending to induce drowsiness or sleep." },
+      { word: "sprachgefühl", definition: "An intuitive sense of what is linguistically appropriate." },
+      { word: "stochastic", definition: "Randomly determined; having a random probability distribution or pattern that may be analyzed statistically but may not be predicted precisely." },
+      { word: "supercilious", definition: "Behaving or looking as though one thinks one is superior to others." },
+      { word: "susurrus", definition: "Whispering, murmuring, or rustling." },
+      { word: "sycophant", definition: "A person who acts obsequiously toward someone important in order to gain advantage." },
+      { word: "synecdoche", definition: "A figure of speech in which a part is made to represent the whole or vice versa." },
+      { word: "taciturn", definition: "Reserved or uncommunicative in speech; saying little." },
+      { word: "temerity", definition: "Excessive confidence or boldness; audacity." },
+      { word: "threnody", definition: "A lament for the dead; an elegy." },
+      { word: "trenchant", definition: "Vigorous or incisive in expression or style." },
+      { word: "troglodyte", definition: "A person who is regarded as being deliberately ignorant or old-fashioned." },
+      { word: "tryptophan", definition: "An amino acid that is a constituent of most proteins." },
+      { word: "ubiquitous", definition: "Present, appearing, or found everywhere." },
+      { word: "unctuous", definition: "Excessively or ingratiatingly flattering; oily." },
+      { word: "untoward", definition: "Unexpected and inappropriate or inconvenient." },
+      { word: "usufruct", definition: "The right to enjoy the use and advantages of another's property short of the destruction or waste of its substance." },
+      { word: "vagary", definition: "An unexpected and inexplicable change in a situation or in someone's behavior." },
+      { word: "vainglorious", definition: "Excessively proud of oneself or one's achievements; overly vain." },
+      { word: "valediction", definition: "The action of saying farewell." },
+      { word: "verisimilitude", definition: "The appearance of being true or real." },
+      { word: "vicissitude", definition: "A change of circumstances or fortune, typically one that is unwelcome or unpleasant." },
+      { word: "vituperate", definition: "Blame or insult (someone) in strong or violent language." },
+      { word: "vociferous", definition: "Vehement or clamorous." },
+      { word: "waggish", definition: "Humorous in a playful, mischievous, or facetious manner." },
+      { word: "wanderlust", definition: "A strong desire to travel." },
+      { word: "widdershins", definition: "In a direction contrary to the sun's course, counterclockwise." },
+      { word: "xerophyte", definition: "A plant adapted for growth under dry conditions." },
+      { word: "yahoo", definition: "A rude, noisy, or violent person." },
+      { word: "yare", definition: "Quick; agile; lively." },
+      { word: "yeoman", definition: "A man holding and cultivating a small landed estate; a freeholder." },
+      { word: "zeitgeist", definition: "The defining spirit or mood of a particular period of history as shown by the ideas and beliefs of the time." },
+      { word: "zenith", definition: "The time at which something is most powerful or successful." },
+      { word: "zephyr", definition: "A soft gentle breeze." },
+      { word: "zugzwang", definition: "A situation in which the obligation to make a move in one's turn is a serious, often decisive, disadvantage." }
+    ];
+
+    let lastWord = null;
+
+    function getRandomObscureWord() {
+      let randomWord;
+      do {
+        randomWord = obscureWords[Math.floor(Math.random() * obscureWords.length)];
+      } while (randomWord.word === lastWord);
+      
+      lastWord = randomWord.word;
+      return randomWord;
+    }
+
+    function createShockwave() {
+      const shockwave = document.createElement('div');
+      shockwave.classList.add('shockwave');
+      
+      const wordRect = wordElement.getBoundingClientRect();
+      const wordCenterX = wordRect.left + wordRect.width / 2;
+      const wordCenterY = wordRect.top + wordRect.height / 2;
+      
+      shockwave.style.left = `${wordCenterX}px`;
+      shockwave.style.top = `${wordCenterY}px`;
+      shockwave.style.transform = 'translate(-50%, -50%)';
+      
+      document.body.appendChild(shockwave);
+      
+      document.body.style.transition = 'filter 0.3s ease-in-out';
+      document.body.style.filter = 'blur(3px) hue-rotate(10deg)';
+      
+      setTimeout(() => {
+        document.body.style.filter = 'none';
+      }, 300);
+
+      shockwave.addEventListener('animationend', () => {
+        shockwave.remove();
+      });
+    }
+
+    async function updateWordAndDefinition() {
+      wordElement.textContent = "...";
+      definitionElement.textContent = "Unearthing obscurity...";
+      reloadButton.disabled = true;
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const { word, definition } = getRandomObscureWord();
+      
+      wordElement.textContent = word;
+      definitionElement.textContent = definition;
+      reloadButton.disabled = false;
+
+      createShockwave();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    }
+
+    window.addEventListener('load', updateWordAndDefinition);
+    reloadButton.addEventListener('click', updateWordAndDefinition);
+    themeToggle.addEventListener('click', toggleTheme);
+  </script>
+</body>
+</html>
